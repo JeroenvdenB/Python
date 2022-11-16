@@ -58,7 +58,10 @@ def MassVol():
 
     return question
 
+# spit out some questions
+number = 5
+
 i = 0
-while i < 5:
+while i < number:
     print(MassVol())
     i += 1
