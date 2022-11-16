@@ -1,0 +1,10 @@
+from decimal import *
+getcontext().prec = 3
+m = '6.24'
+d = '7.80'
+m = Decimal(m)
+d = Decimal(d)
+V = m / d
+print(V, type(V))
+
+print((Decimal('6.24')/Decimal('7.80'))*Decimal('2'))
