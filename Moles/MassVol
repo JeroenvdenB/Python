@@ -3,10 +3,16 @@
 # subscript formatting only works in python 3.3 or higher, with unicode formatting
 # use a typesetting like LaTeX to improve
 # random instead of randint is used, because randint is reportedly massively slower
+# note on answer generation: the number precision is not quite like how we do it in class
+# if the answer to a calculation happens to be exact, without decimal points, Decimal looses the extra zeros
+# that would otherwise indicate accuracy in scientific notations. Using Decimal is also not required
+# for the accuraccy at all, but rather a formatting 'cheat' to (in most cases) get three significant numbers.
 
 from random import random
 from random import randint
 import csv
+from decimal import Decimal, getcontext
+getcontext().prec = 3
 
 def MassVol():
     # we need 4 decisions
@@ -19,14 +25,19 @@ def MassVol():
     r = random()
     if r < 0.2:
         unit = 'mL'
+        unit_output = 'mL'
     elif r <0.4:
         unit = 'L'
+        unit_output = 'L'
     elif r < 0.6:
-        unit = 'cm\N{SUPERSCRIPT THREE}'
+        unit = 'cm3'
+        unit_output = 'cm\N{SUPERSCRIPT THREE}'
     elif r < 0.8:
-        unit = 'dm\N{SUPERSCRIPT THREE}'
+        unit = 'dm3'
+        unit_output = 'dm\N{SUPERSCRIPT THREE}'
     else:
-        unit = 'm\N{SUPERSCRIPT THREE}'
+        unit = 'm3'
+        unit_output = 'm\N{SUPERSCRIPT THREE}'
 
     # b) selecting a compound. Set compounds table location manually.
     my_file_path = r'C:\Users\jvand\Documents\Python\Moles\Compound_csv.csv'
@@ -45,23 +56,78 @@ def MassVol():
     compound_row = rows[compound_row_nr]
     compound = compound_row[1]
 
-    # c) generate an amount with 2 decimal points
-    amount = round(random()*10,2)
+    # c) generate an amount. This needs to be a decimal for the answer generator to work properly.
+    amount = random()
+    if amount < 0.1: #adjust too small amounts
+        amount = amount*100 
+    if unit == 'm3': #adjust amount when m3 are asked, or answers are too small
+        amount = amount*10000
+    # Decimal in python does not let me convert floats to decimals. I take a detour through a string.
+    string = str(amount)
+    amount = Decimal(string)*100    
 
-    # d) assemble final question
+    # d) assemble final question and generate answer depending on question type
     if random() < 0.5:
         # this is mass to volume
-        question = f'Hoeveel {unit} is {amount} gram {compound} bij T = 298K?'
+        question = f'Hoeveel {unit_output} is {amount} gram {compound} bij T = 298K?'
+        
+        # Generate the answer to the question
+        d = Decimal(compound_row[2]) #fetch densitiy from compound table and turn into a float
+        V = amount / d #calculate volume, answer is always mL
+
+        # Check if unit conversion is required.
+        if unit == 'mL' or unit == 'cm3':
+            V_adj = V
+        elif unit == 'L' or unit =='dm3':
+            V_adj = V/1000
+        elif unit == 'm3':
+            V_adj = V/1000000
+        else:
+            print("Unit error!")
+
+        answer = (
+            f'\u03C1 = {d} g/mL\n'
+            f'V = m / \u03C1 = {amount} / {d} = {V} mL \n'
+            f'V = {V_adj} {unit_output}'
+        )
     else:
         # this is volume to mass
-        question = f'Hoeveel gram is {amount} {unit} {compound} bij T = 298K?'
+        question = f'Hoeveel gram is {amount} {unit_output} {compound} bij T = 298K?'
 
-    return question
+        # Generate the answer to the question
+        d = Decimal(compound_row[2]) #fetch densitiy from compound table and turn into a float
+        
+        # Check if unit conversion is required.
+        if unit == 'mL' or unit == 'cm3':
+            d_adj = d
+            Adjusted = False
+        elif unit == 'L' or unit =='dm3':
+            d_adj = d*1000
+            Adjusted = True
+        elif unit == 'm3':
+            d_adj = d*1000000
+            Adjusted = True
+        else:
+            print("Unit error!")
 
-# spit out some questions
-number = 5
+        m = amount * d_adj
+        if Adjusted:
+            answer = (
+                f'\u03C1 = {d} g/mL = {d_adj} g/{unit_output}\n'
+                f'm = V x \u03C1 = {amount} x {d_adj} = {m} g'
+            )
+        else:
+            answer = (
+                f'\u03C1 = {d} g/mL\n'
+                f'm = V x \u03C1 = {amount} x {d_adj} = {m} g'
+            )
 
-i = 0
-while i < number:
-    print(MassVol())
-    i += 1
+        
+
+
+    print(question)
+    print(answer)
+
+    # return question
+
+MassVol()
