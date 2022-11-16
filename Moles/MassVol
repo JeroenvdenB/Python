@@ -1,0 +1,64 @@
+# MassVol : calculations between mass and volume
+
+# subscript formatting only works in python 3.3 or higher, with unicode formatting
+# use a typesetting like LaTeX to improve
+# random instead of randint is used, because randint is reportedly massively slower
+
+from random import random
+from random import randint
+import csv
+
+def MassVol():
+    # we need 4 decisions
+    # a) use mL, L, cm3, dm3 or m3
+    # b) a random compound from the compound csv file
+    # c) a random amount between 1,00 and 10,0
+    # d) the type of question (mass to volume or volume to mass) and assemble
+
+    # a) decide the unit. r is between 0 and 1, there are five equal options, so I check for five brackets that r might be in.
+    r = random()
+    if r < 0.2:
+        unit = 'mL'
+    elif r <0.4:
+        unit = 'L'
+    elif r < 0.6:
+        unit = 'cm\N{SUPERSCRIPT THREE}'
+    elif r < 0.8:
+        unit = 'dm\N{SUPERSCRIPT THREE}'
+    else:
+        unit = 'm\N{SUPERSCRIPT THREE}'
+
+    # b) selecting a compound. Set compounds table location manually.
+    my_file_path = r'C:\Users\jvand\Documents\Python\Moles\Compound_csv.csv'
+    table = open(my_file_path)
+    csvreader = csv.reader(table)
+
+    # the header contains: name, formula, density (g/mL), atom_1, atom_2, atom_3, atom_4, in that order
+    # atom fields are emtpy if there are less than 4 atoms.
+    # fetch the rows from the csv. This will make a list of lists. Each row is a compound. Within that row select the second item for the compound name.
+    rows = []
+    for row in csvreader:
+        rows.append(row)
+
+    table.close()
+    compound_row_nr = randint(1,len(rows)-1)
+    compound_row = rows[compound_row_nr]
+    compound = compound_row[1]
+
+    # c) generate an amount with 2 decimal points
+    amount = round(random()*10,2)
+
+    # d) assemble final question
+    if random() < 0.5:
+        # this is mass to volume
+        question = f'Hoeveel {unit} is {amount} gram {compound} bij T = 298K?'
+    else:
+        # this is volume to mass
+        question = f'Hoeveel gram is {amount} {unit} {compound} bij T = 298K?'
+
+    return question
+
+i = 0
+while i < 5:
+    print(MassVol())
+    i += 1

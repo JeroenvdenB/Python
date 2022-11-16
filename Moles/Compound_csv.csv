@@ -1,0 +1,6 @@
+Name,Formula,Density(g/mL),Atom_1,Atom_2,Atom_3,Atom_4
+Water,H2O,1.00,2H,1O,,
+Aluminium,Al,2.70,1Al,,,
+IJzer,Fe,7.80,1Fe,,,
+Natriumchloride,NaCl,2.16,1Na,1Cl,,
+Ethanol,CH3CH2OH,0.79,6H,2C,1O,
